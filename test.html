@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        div {
+            width: 1200px;
+            height: 800px;
+            /*border: 1px solid red;*/
+            overflow: hidden;
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+<div>
+
+</div>
+</body>
+</html>
+
+<script>
+    /**
+     * 为网页添加文字水印
+     */
+    watermark({watermark_txt: "201906154978745 602549"})//传入动态水印内容
+    function watermark(settings) {
+        //默认设置
+        var defaultSettings = {
+            watermark_txt: "text",
+            watermark_x: 0,//水印起始位置x轴坐标
+            watermark_y: 0,//水印起始位置Y轴坐标
+            watermark_rows: 100,//水印行数
+            watermark_cols: 100,//水印列数
+            watermark_x_space: 30,//水印x轴间隔
+            watermark_y_space: 0,//水印y轴间隔
+            watermark_color: '#000000',//水印字体颜色
+            watermark_alpha: 0.1,//水印透明度
+            watermark_fontsize: '14px',//水印字体大小
+            watermark_fontWeight: 'bold',//水印字体加粗
+            watermark_font: '微软雅黑',//水印字体
+            watermark_width: 120,//水印宽度
+            watermark_height: 80,//水印长度
+            watermark_angle: 50//水印倾斜度数
+        };
+        //采用配置项替换默认值，作用类似jquery.extend
+        if (arguments.length === 1 && typeof arguments[0] === "object") {
+            var src = arguments[0] || {};
+            for (key in src) {
+                if (src[key] && defaultSettings[key] && src[key] === defaultSettings[key])
+                    continue;
+                else if (src[key])
+                    defaultSettings[key] = src[key];
+            }
+        }
+
+        var oTemp = document.createDocumentFragment();
+
+        //获取页面最大宽度
+        var page_width = Math.max(document.body.scrollWidth, document.body.clientWidth);
+        //获取页面最大长度
+        var page_height = Math.max(document.body.scrollHeight, document.body.clientHeight);
+
+        //如果将水印列数设置为0，或水印列数设置过大，超过页面最大宽度，则重新计算水印列数和水印x轴间隔
+        if (defaultSettings.watermark_cols == 0 ||
+            (parseInt(defaultSettings.watermark_x
+                + defaultSettings.watermark_width * defaultSettings.watermark_cols
+                + defaultSettings.watermark_x_space * (defaultSettings.watermark_cols - 1))
+                > page_width)) {
+            defaultSettings.watermark_cols =
+                parseInt((page_width
+                    - defaultSettings.watermark_x
+                    + defaultSettings.watermark_x_space)
+                    / (defaultSettings.watermark_width
+                        + defaultSettings.watermark_x_space));
+            defaultSettings.watermark_x_space =
+                parseInt((page_width
+                    - defaultSettings.watermark_x
+                    - defaultSettings.watermark_width
+                    * defaultSettings.watermark_cols)
+                    / (defaultSettings.watermark_cols - 1));
+        }
+        //如果将水印行数设置为0，或水印行数设置过大，超过页面最大长度，则重新计算水印行数和水印y轴间隔
+        if (defaultSettings.watermark_rows == 0 ||
+            (parseInt(defaultSettings.watermark_y
+                + defaultSettings.watermark_height * defaultSettings.watermark_rows
+                + defaultSettings.watermark_y_space * (defaultSettings.watermark_rows - 1))
+                > page_height)) {
+            defaultSettings.watermark_rows =
+                parseInt((defaultSettings.watermark_y_space
+                    + page_height - defaultSettings.watermark_y)
+                    / (defaultSettings.watermark_height + defaultSettings.watermark_y_space));
+            defaultSettings.watermark_y_space =
+                parseInt((page_height
+                    - defaultSettings.watermark_y
+                    - defaultSettings.watermark_height
+                    * defaultSettings.watermark_rows)
+                    / (defaultSettings.watermark_rows - 1));
+        }
+        var x;
+        var y;
+        for (var i = 0; i < defaultSettings.watermark_rows; i++) {
+            y = defaultSettings.watermark_y + (defaultSettings.watermark_y_space + defaultSettings.watermark_height) * i;
+            for (var j = 0; j < defaultSettings.watermark_cols; j++) {
+                x = defaultSettings.watermark_x + (defaultSettings.watermark_width + defaultSettings.watermark_x_space) * j;
+
+                var mask_div = document.createElement('div');
+                mask_div.id = 'mask_div' + i + j;
+                mask_div.appendChild(document.createTextNode(defaultSettings.watermark_txt));
+                //设置水印div倾斜显示
+                mask_div.style.webkitTransform = "rotate(-" + defaultSettings.watermark_angle + "deg)";
+                mask_div.style.MozTransform = "rotate(-" + defaultSettings.watermark_angle + "deg)";
+                mask_div.style.msTransform = "rotate(-" + defaultSettings.watermark_angle + "deg)";
+                mask_div.style.OTransform = "rotate(-" + defaultSettings.watermark_angle + "deg)";
+                mask_div.style.transform = "rotate(-" + defaultSettings.watermark_angle + "deg)";
+                mask_div.style.visibility = "";
+                mask_div.style.position = "absolute";
+                mask_div.style.left = x + 'px';
+                mask_div.style.top = y + 'px';
+                mask_div.style.overflow = "hidden";
+                mask_div.style.zIndex = "9999";
+                //mask_div.style.border="solid #eee 1px";
+                mask_div.style.opacity = defaultSettings.watermark_alpha;
+                mask_div.style.fontSize = defaultSettings.watermark_fontsize;
+                mask_div.style.fontWeight = defaultSettings.watermark_fontWeight;
+                mask_div.style.fontFamily = defaultSettings.watermark_font;
+                mask_div.style.color = defaultSettings.watermark_color;
+                mask_div.style.textAlign = "center";
+                mask_div.style.width = defaultSettings.watermark_width + 'px';
+                mask_div.style.height = defaultSettings.watermark_height + 'px';
+                mask_div.style.display = "block";
+                oTemp.appendChild(mask_div);
+            }
+            ;
+        }
+        ;
+        console.log(oTemp)
+        document.querySelector("div").appendChild(oTemp);
+
+    }
+//   private watermark(settings: any) {
+//         // 默认设置
+//         const defaultSettings = {
+//             watermark_txt: '1231231241241412415135231241',
+//             watermark_x: -30, // 水印起始位置x轴坐标
+//             watermark_y: 0, // 水印起始位置Y轴坐标
+//             watermark_rows: 100, // 水印行数
+//             watermark_cols: 100, // 水印列数
+//             watermark_x_space: 40, // 水印x轴间隔
+//             watermark_y_space: 20, // 水印y轴间隔
+//             watermark_color: '#000000', // 水印字体颜色
+//             watermark_alpha: 0.1, // 水印透明度
+//             watermark_fontsize: '20px', // 水印字体大小
+//             watermark_fontWeight: 'bold', // 水印字体加粗
+//             watermark_font: '微软雅黑', // 水印字体
+//             watermark_width: 300, // 水印宽度
+//             watermark_height: 80, // 水印长度
+//             watermark_angle: 30 // 水印倾斜度数
+//         }
+//         // 采用配置项替换默认值，作用类似jquery.extend
+//         if (arguments.length === 1 && typeof arguments[0] === 'object') {
+//             const src: any = arguments[0] || {}
+//             for (const key in src) {
+//                 if (
+//                     src[key] &&
+//                     (defaultSettings as any)[key] &&
+//                     src[key] === (defaultSettings as any)[key]
+//                 ) {
+//                     const ne = ''
+//                 } else if (src[key]) {
+//                     (defaultSettings as any)[key] = src[key]
+//                 }
+//             }
+//         }
+
+//         const oTemp = document.createDocumentFragment()
+
+//         // 获取页面最大宽度
+//         const pageWidth: any = 650
+//         // 获取页面最大长度
+//         const pageHeight: any = 920
+
+//         // 如果将水印列数设置为0，或水印列数设置过大，超过页面最大宽度，则重新计算水印列数和水印x轴间隔
+//         const num: any =
+//             defaultSettings.watermark_x +
+//             defaultSettings.watermark_width * defaultSettings.watermark_cols +
+//             defaultSettings.watermark_x_space * (defaultSettings.watermark_cols - 1)
+//         const deSettings: any = parseInt(num, 10) > pageWidth
+
+//         if (defaultSettings.watermark_cols === 0 || num) {
+//             const num1: any =
+//                 (pageWidth -
+//                     defaultSettings.watermark_x +
+//                     defaultSettings.watermark_x_space) /
+//                 (defaultSettings.watermark_width + defaultSettings.watermark_x_space)
+//             defaultSettings.watermark_cols = parseInt(num1, 10)
+
+//             const num2: any =
+//                 (pageWidth -
+//                     defaultSettings.watermark_x -
+//                     defaultSettings.watermark_width * defaultSettings.watermark_cols) /
+//                 (defaultSettings.watermark_cols - 1)
+//             defaultSettings.watermark_x_space = parseInt(num2, 10)
+//         }
+
+//         const num3: any =
+//             defaultSettings.watermark_y +
+//             defaultSettings.watermark_height * defaultSettings.watermark_rows +
+//             defaultSettings.watermark_y_space * (defaultSettings.watermark_rows - 1)
+//         const deSettings1: any = parseInt(num3, 10) > pageHeight
+//         // 如果将水印行数设置为0，或水印行数设置过大，超过页面最大长度，则重新计算水印行数和水印y轴间隔
+//         if (defaultSettings.watermark_rows === 0 || deSettings1) {
+//             const num4: any = (defaultSettings.watermark_y_space
+//                 + pageHeight - defaultSettings.watermark_y)
+//                 / (defaultSettings.watermark_height + defaultSettings.watermark_y_space)
+//             defaultSettings.watermark_rows = parseInt(num4, 10)
+
+//             const num5: any =
+//                 (pageHeight -
+//                     defaultSettings.watermark_y -
+//                     defaultSettings.watermark_height * defaultSettings.watermark_rows) /
+//                 (defaultSettings.watermark_rows - 1)
+//             defaultSettings.watermark_y_space = parseInt(num5, 10)
+//         }
+
+//         let x
+//         let y
+//         for (let i = 0; i < defaultSettings.watermark_rows; i++) {
+//             y =
+//                 defaultSettings.watermark_y +
+//                 (defaultSettings.watermark_y_space + defaultSettings.watermark_height) *
+//                 i
+//             for (let j = 0; j < defaultSettings.watermark_cols; j++) {
+//                 x =
+//                     defaultSettings.watermark_x +
+//                     (defaultSettings.watermark_width +
+//                         defaultSettings.watermark_x_space) *
+//                     j
+
+//                 const maskDiv: any = document.createElement('div')
+//                 maskDiv.id = 'mask_div' + i + j
+//                 maskDiv.appendChild(
+//                     document.createTextNode(defaultSettings.watermark_txt)
+//                 )
+//                 // 设置水印div倾斜显示
+//                 maskDiv.style.webkitTransform =
+//                     'rotate(-' + defaultSettings.watermark_angle + 'deg)'
+//                 maskDiv.style.MozTransform =
+//                     'rotate(-' + defaultSettings.watermark_angle + 'deg)'
+//                 maskDiv.style.msTransform =
+//                     'rotate(-' + defaultSettings.watermark_angle + 'deg)'
+//                 maskDiv.style.OTransform =
+//                     'rotate(-' + defaultSettings.watermark_angle + 'deg)'
+//                 maskDiv.style.transform =
+//                     'rotate(-' + defaultSettings.watermark_angle + 'deg)'
+//                 maskDiv.style.visibility = ''
+//                 maskDiv.style.position = 'absolute'
+//                 maskDiv.style.left = x + 'px'
+//                 maskDiv.style.top = y + 'px'
+//                 maskDiv.style.overflow = 'hidden'
+//                 maskDiv.style.zIndex = '9999'
+//                 // mask_div.style.border="solid #eee 1px";
+//                 maskDiv.style.opacity = defaultSettings.watermark_alpha
+//                 maskDiv.style.fontSize = defaultSettings.watermark_fontsize
+//                 maskDiv.style.fontWeight = defaultSettings.watermark_fontWeight
+//                 maskDiv.style.fontFamily = defaultSettings.watermark_font
+//                 maskDiv.style.color = defaultSettings.watermark_color
+//                 maskDiv.style.textAlign = 'center'
+//                 maskDiv.style.width = defaultSettings.watermark_width + 'px'
+//                 maskDiv.style.height = defaultSettings.watermark_height + 'px'
+//                 maskDiv.style.display = 'block'
+//                 oTemp.appendChild(maskDiv)
+//             }
+//         }
+//         (document.querySelector('.populations') as any).appendChild(oTemp)
+//     }
+</script>
